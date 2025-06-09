@@ -43,7 +43,11 @@ class DealerSelectionService {
     const response = {
       type: "dealer-selection",
       distributedCards: this.distributedCards,
-      tenOfDenariPlayer: this.tenOfDenariPlayer,
+      tenOfDenariPlayer: {
+        username : this.tenOfDenariPlayer?.username,
+        score: this.tenOfDenariPlayer?.score,
+        socketId: this.tenOfDenariPlayer?.socket.id,
+      },
     };
     return response;
   }

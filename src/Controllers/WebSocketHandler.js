@@ -3,9 +3,9 @@ const Room = require("../Models/Room");
 const GameController = require("./GameController");
 
 class WebSocketHandler {
-  constructor(wss) {
+  constructor(wss, roomService) {
     this.wss = wss;
-    this.rooms = {};
+    this.roomService = roomService;
     this.gameControllers = {};
   }
 
@@ -34,43 +34,44 @@ class WebSocketHandler {
   joinRoom(socket, message) {
     const { roomId, username } = message;
 
-    if (!this.rooms[roomId]) {
-      socket.send(
-        JSON.stringify({ type: "error", message: "Room does not exist" })
-      );
+    const result = this.roomService.addPlayerToRoom(roomId, username, socket);
+
+    if (result.error === "Room does not exist") {
+      socket.send(JSON.stringify({ type: "error", message: result.error }));
       return;
     }
 
-    const room = this.rooms[roomId];
-    const player = new Player(username, socket);
-
-    if (room.addPlayer(player)) {
-      socket.roomId = roomId;
-      socket.username = username;
-
-      socket.send(
-        JSON.stringify({
-          type: "room-details",
-          roomId,
-          players: room.players,
-          users: room.users,
-        })
-      );
-
-      room.updateRoom();
-
-      if (room.isFull()) {
-        const gameController = new GameController(room);
-        this.gameControllers[roomId] = gameController;
-        gameController.start();
-      }
-    } else {
-      socket.send(
-        JSON.stringify({ type: "room-full", message: "Room is full" })
-      );
+    if (result.error === "Room is full") {
+      socket.send(JSON.stringify({ type: "room-full", message: result.error }));
       socket.close();
+      return;
     }
-  }
+
+    const { room } = result;
+
+    socket.roomId = roomId;
+    socket.username = username;
+
+    socket.send(
+      JSON.stringify({
+        type: "room-details",
+        roomId,
+        players: room.players,
+        users: room.users,
+      })
+    );
+
+    room.updateRoom();
+
+    if (room.isFull()) {
+      const gameController = new GameController(room);
+      this.gameControllers[roomId] = gameController;
+      gameController.start();
+    }
+
+  } 
+  
+  
 
   handleSuitSelection(message) {
     const { roomId, suit } = message;

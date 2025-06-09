@@ -1,4 +1,5 @@
-const { v4: uuidv4 } = require('uuid');
+const Room = require('../Models/Room');
+const Player = require('../Models/Player');
 
 class RoomService {
     constructor() {
@@ -6,14 +7,29 @@ class RoomService {
     }
 
     createRoom(playersNum, maxScore) {
-        const roomId = uuidv4();
-        const room = {id: roomId, playersNum: playersNum, maxScore: maxScore, users: []}
+        const room = new Room(playersNum, maxScore);
+        const roomId = room.getRoomId();
         this.rooms.set(roomId, room); 
         return roomId;
     }
 
     getRoom(roomId) {
         return this.rooms.get(roomId);
+    }
+
+    addPlayerToRoom(roomId, username, socket) {
+        const room = this.getRoom(roomId);
+        if (!room) return { error: "Room does not exist" };
+
+        const player = new Player(username, socket);
+
+        try {
+           room.addPlayer(player);
+            return { room, player };
+        }
+        catch (error) {
+            return { error: error.name }; 
+        }
     }
 }
 

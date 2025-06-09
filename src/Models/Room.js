@@ -1,3 +1,5 @@
+const { v4: uuidv4 } = require("uuid");
+
 class Room {
   constructor(players, score) {
     this.roomId = uuidv4();
@@ -15,15 +17,18 @@ class Room {
   }
 
   addPlayer(player) {
-    if (this.users.length < this.players) {
+    if (this.users.length >= this.players) {
+      throw new RoomFullException();
+    }
+
       this.users.push(player);
       this.clients.add(player.socket);
       return true;
-    }
-    return false;
+
   }
 
   broadcast(message) {
+    console.log("Broadcasting message:", message);
     this.clients.forEach((client) => {
       client.send(JSON.stringify(message));
     });
