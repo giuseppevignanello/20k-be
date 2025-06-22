@@ -1,4 +1,5 @@
 const Deck = require("../Models/Deck");
+const Dealer = require("../Models/Player/Dealer");
 
 class DealerSelectionService {
   constructor(room) {
@@ -10,7 +11,8 @@ class DealerSelectionService {
   selectFirstDealer() {
     const deck = new Deck();
     this.randomDeck = deck.getRandomDeck();
-    return this.distributeRandomDeck();
+    this.distributeRandomDeck();
+    return getFirstDealerAndDistributedCards();
   }
 
   distributeRandomDeck() {
@@ -29,27 +31,23 @@ class DealerSelectionService {
       this.distributedCards.push(card);
 
       if (card.suit == "denari" && card.value == 10) {
-        this.tenOfDenariPlayer = currentPlayer;
+        this.tenOfDenariPlayer = new Dealer()
+          .setUsername(currentPlayer.username)
+          .setSocket(currentPlayer.socket); 
         break;
       }
 
       playerIndex = (playerIndex + 1) % users.length;
     }
-
-    return this.buildResponse();
   }
 
-  buildResponse() {
-    const response = {
-      type: "dealer-selection",
-      distributedCards: this.distributedCards,
-      tenOfDenariPlayer: {
-        username : this.tenOfDenariPlayer?.username,
-        score: this.tenOfDenariPlayer?.score,
-        socketId: this.tenOfDenariPlayer?.socket.id,
-      },
-    };
-    return response;
+  getFirstDealerAndDistributedCards() {
+    // TODO: change with a code error
+    if (!this.tenOfDenariPlayer) {
+      throw new Error("No player has the Ten of Denari card.");
+    }
+
+    return { dealer : this.tenOfDenariPlayer, distributedCards: this.distributedCards };
   }
 }
 module.exports = DealerSelectionService;

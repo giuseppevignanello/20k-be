@@ -1,4 +1,4 @@
-const Player = require("../Models/Player");
+const Player = require("../Models/Player/Player");
 const Room = require("../Models/Room");
 const GameController = require("./GameController");
 
@@ -36,6 +36,7 @@ class WebSocketHandler {
 
     const result = this.roomService.addPlayerToRoom(roomId, username, socket);
 
+    // TODO: changhe with a errore code
     if (result.error === "Room does not exist") {
       socket.send(JSON.stringify({ type: "error", message: result.error }));
       return;

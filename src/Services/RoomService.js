@@ -1,5 +1,5 @@
 const Room = require('../Models/Room');
-const Player = require('../Models/Player');
+const Player = require('../Models/Player/Player');
 
 class RoomService {
     constructor() {

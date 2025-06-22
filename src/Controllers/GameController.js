@@ -7,13 +7,13 @@ class GameController {
   }
 
   start() {
-    const dealerResponse = this.preGamePhaseController.startDealerPhase();
+    this.handleDealerSelection();
     const firstThreeCardsDistributionResponse =
       this.preGamePhaseController.firstThreeCardsDistribution();
     const firstThreeCardsDistribution =
       firstThreeCardsDistributionResponse.firstThreeCards;
     this.room.remainingDeck = firstThreeCardsDistributionResponse.remainingDeck;
-    this.room.broadcast(dealerResponse);
+  
 
     this.room.users.forEach((user, index) => {
       const playerCards = {
@@ -23,6 +23,25 @@ class GameController {
 
       user.socket.send(JSON.stringify(playerCards));
     });
+  }
+
+  // TODO: move to Service
+  handleDealerSelection() {
+    const dealerAndDistributedCards = this.preGamePhaseController.startDealerPhase();
+    this.broadcastDealerAndDistributedCards(dealerAndDistributedCards)
+  }
+
+  broadcastDealerAndDistributedCards(dealerAndDistributedCards) {
+    const response = {
+      type: "dealer-selection",
+      dealer: {
+        username: dealerAndDistributedCards.dealer.username,
+        socketId: dealerAndDistributedCards.dealer.socket.id,
+      },
+      distributedCards: dealerAndDistributedCards.distributedCards,
+    }
+
+    this.room.broadcast(response);
   }
 
   distributeTwoCards() {
