@@ -76,7 +76,7 @@ class WebSocketHandler {
 
   handleSuitSelection(message) {
     const { roomId, suit } = message;
-    const room = this.rooms[roomId];
+    const room = this.roomService.getRoom(roomId);
     const actualUserOnTurnIndex = message.userOnTurnIndex;
     const newUserOnTurnIndex = (actualUserOnTurnIndex + 1) % room.users.length;
     room.broadcast({
@@ -93,7 +93,7 @@ class WebSocketHandler {
 
   handlePlayingDecision(message) {
     const { roomId, user, playingDecision } = message;
-    const room = this.rooms[roomId];
+    const room = this.roomService.getRoom(roomId);
     const actualUserOnTurnIndex = message.userOnTurnIndex;
     const newUserOnTurnIndex = actualUserOnTurnIndex + 1;
     console.log("newUserOnTurnIndex", newUserOnTurnIndex);

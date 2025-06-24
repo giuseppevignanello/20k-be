@@ -12,7 +12,7 @@ class DealerSelectionService {
     const deck = new Deck();
     this.randomDeck = deck.getRandomDeck();
     this.distributeRandomDeck();
-    return getFirstDealerAndDistributedCards();
+    return this.getFirstDealerAndDistributedCards();
   }
 
   distributeRandomDeck() {
