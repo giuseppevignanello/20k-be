@@ -96,9 +96,6 @@ class WebSocketHandler {
     const room = this.roomService.getRoom(roomId);
     const actualUserOnTurnIndex = message.userOnTurnIndex;
     const newUserOnTurnIndex = actualUserOnTurnIndex + 1;
-    console.log("newUserOnTurnIndex", newUserOnTurnIndex);
-    console.log("actualUserOnTurnIndex", actualUserOnTurnIndex);
-    console.log(user, user);
 
     room.broadcast({
       type: "playing-decision",

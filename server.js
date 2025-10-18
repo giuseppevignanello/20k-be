@@ -17,8 +17,8 @@ const server = app.listen(port, () => {
 });
 
 const wss = new WebSocketServer({ noServer: true });
-const roomService = new RoomService();
 const webSocketHandler = new WebSocketHandler(wss, roomService);
+const roomService = new RoomService();
 const roomController = new RoomController(roomService, webSocketHandler);
 
 server.on("upgrade", (request, socket, head) => {

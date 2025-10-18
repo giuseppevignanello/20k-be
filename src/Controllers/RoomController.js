@@ -10,7 +10,8 @@ class RoomController {
     const errors = RoomValidator.validateCreateRoomBody(req.body);
     if (errors.length > 0) {
         return res.status(400).json({ errors });
-        }
+    }
+    
     const { playersNum, maxScore } = req.body;
     const roomId = this.roomService.createRoom(playersNum, maxScore);
 
