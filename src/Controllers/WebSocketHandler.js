@@ -1,6 +1,4 @@
-const Player = require("../Models/Player/Player");
-const Room = require("../Models/Room");
-const GameController = require("./GameController");
+const RoomController = require('./RoomController');
 
 class WebSocketHandler {
   constructor(wss, roomService) {
@@ -16,10 +14,13 @@ class WebSocketHandler {
     });
   }
 
+  // This is the 'sorting center' of all the entering 
+  // websocket communications
   handleMessage(socket, message) {
+    const roomController = new RoomController(this.roomService);
     switch (message.type) {
       case "join-room":
-        this.joinRoom(socket, message);
+        roomController.joinRoom(socket, message);
         break;
       case "suit-selected":
         this.handleSuitSelection(message);
@@ -31,46 +32,48 @@ class WebSocketHandler {
     }
   }
 
-  joinRoom(socket, message) {
-    const { roomId, username } = message;
+  // TODO: move this to RoomController
+  // joinRoom(socket, message) {
+  //   const { roomId, username } = message;
+  //   try {
+  //     const result = this.roomService.addPlayerToRoom(roomId, username, socket);
 
-    const result = this.roomService.addPlayerToRoom(roomId, username, socket);
+  //     const { room } = result;
 
-    // TODO: changhe with a errore code
-    if (result.error === "Room does not exist") {
-      socket.send(JSON.stringify({ type: "error", message: result.error }));
-      return;
-    }
+  //     socket.roomId = roomId;
+  //     socket.username = username;
 
-    if (result.error === "Room is full") {
-      socket.send(JSON.stringify({ type: "room-full", message: result.error }));
-      socket.close();
-      return;
-    }
+  //     socket.send(
+  //       JSON.stringify({
+  //         type: "room-details",
+  //         roomId,
+  //         players: room.players,
+  //         users: room.users,
+  //       })
+  //     );
 
-    const { room } = result;
+  //     room.updateRoom();
 
-    socket.roomId = roomId;
-    socket.username = username;
-
-    socket.send(
-      JSON.stringify({
-        type: "room-details",
-        roomId,
-        players: room.players,
-        users: room.users,
-      })
-    );
-
-    room.updateRoom();
-
-    if (room.isFull()) {
-      const gameController = new GameController(room);
-      this.gameControllers[roomId] = gameController;
-      gameController.start();
-    }
-
-  } 
+  //     if (room.isFull()) {
+  //       const gameController = new GameController(room);
+  //       this.gameControllers[roomId] = gameController;
+  //       gameController.start();
+  //    }
+  //   } catch (error) {
+  //     console.log(error);
+  //     if (error instanceof RoomFullException) {
+  //       socket.send(JSON.stringify({ type: "room-full", message: error.message }));
+  //       socket.close();
+  //     } 
+  //     else if (error instanceof RoomNotFoundException) {
+  //       socket.send(JSON.stringify({ type: "error", message: error.message }));
+  //     } 
+  //     else {
+  //       console.error("Unexpected error:", error);
+  //       socket.send(JSON.stringify({ type: "error", message: "Unexpected server error" }));
+  //     }
+  //   }
+  // } 
   
   
 

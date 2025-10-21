@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
+const { RoomFullException } = require("../Errors/RoomErrors");
 
 class Room {
   constructor(players, score) {
@@ -15,20 +16,8 @@ class Room {
   getRoomId() {
     return this.roomId;
   }
-
-  addPlayer(player) {
-    if (this.users.length >= this.players) {
-      throw new RoomFullException();
-    }
-
-      this.users.push(player);
-      this.clients.add(player.socket);
-      return true;
-
-  }
-
+  
   broadcast(message) {
-    console.log("Broadcasting message:", message);
     this.clients.forEach((client) => {
       client.send(JSON.stringify(message));
     });

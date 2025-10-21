@@ -1,5 +1,5 @@
 const Room = require('../Models/Room');
-const Player = require('../Models/Player/Player');
+const { RoomNotFoundException, RoomFullException } = require('../Errors/RoomErrors')
 
 class RoomService {
     constructor() {
@@ -18,19 +18,19 @@ class RoomService {
     }
 
     addPlayerToRoom(roomId, username, socket) {
-        const room = this.getRoom(roomId);
-        if (!room) return { error: "Room does not exist" };
+    const room = this.rooms.get(roomId);
+    if (!room) throw new RoomNotFoundException();
 
-        const player = new Player(username, socket);
-
-        try {
-           room.addPlayer(player);
-            return { room, player };
-        }
-        catch (error) {
-            return { error: error.name }; 
-        }
+    if (room.users.length >= room.maxPlayers) {
+        throw new RoomFullException();
     }
+
+    const player = { username, socket}; 
+    room.users.push(player);
+    room.clients.add(socket);
+
+    return { room, player };
+}
 }
 
 module.exports = RoomService;

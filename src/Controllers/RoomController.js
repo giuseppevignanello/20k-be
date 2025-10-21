@@ -1,9 +1,10 @@
+const { RoomFullException, RoomNotFoundException } = require('../Errors/RoomErrors');
+const GameController = require("./GameController");
 const RoomValidator = require('../Validators/RoomValidator');
 
 class RoomController {
-  constructor(roomService, webSocketHandler) {
+  constructor(roomService) {
     this.roomService = roomService
-    this.webSocketHandler = webSocketHandler;
   }
 
   createRoom(req, res) {
@@ -29,6 +30,47 @@ class RoomController {
     }
 
     return res.json({ exists: true, full: false });
+  }
+
+  joinRoom(socket, message) {
+    const { roomId, username } = message; 
+    try {
+      const result = this.roomService.addPlayerToRoom(roomId, username, socket); 
+
+      const { room } = result; 
+
+      socket.roomId = roomId; 
+      socket.username = username; 
+
+      socket.send(
+        JSON.stringify({
+          type: "room-details", 
+          roomId, 
+          players: room.players, 
+          users: room.users,
+        })
+      );
+
+      room.updateRoom(); 
+
+      if(room.isFull()) {
+        const gameController = new GameController(room); 
+        gameController.start();
+      }
+    } catch (error) {
+      console.log(error); 
+      if(error instanceof RoomFullException) {
+        socket.send(JSON.stringify({type: "room-full", message: error.message}));
+        socket.close();
+      }      
+      else if (error instanceof RoomNotFoundException) {
+        socket.send(JSON.stringify({tupe:"error", message: error.message}));
+      }
+      else {
+        socket.send(JSON.stringify({type: "error", message: "Unxpected serve error"}))
+      }
+
+    }
   }
 }
 
